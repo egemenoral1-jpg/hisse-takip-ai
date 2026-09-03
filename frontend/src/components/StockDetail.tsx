@@ -6,6 +6,8 @@ import StockChart from "@/components/StockChart";
 type StockPrice = {
   symbol: string;
   price: number;
+  change: number;
+  change_percent: number;
 };
 
 type HistoryPoint = {
@@ -48,11 +50,16 @@ export default function StockDetail({ symbol }: { symbol: string }) {
   const [chartType, setChartType] = useState<"line" | "candle">("line");
 
   useEffect(() => {
-    fetch(`http://127.0.0.1:8000/stocks/${symbol}`)
-      .then((res) => res.json())
-      .then((data) => setStock(data));
+    const fetchPrice = () => {
+      fetch(`http://127.0.0.1:8000/stocks/${symbol}`)
+        .then((res) => res.json())
+        .then((data) => setStock(data));
+    };
 
-        fetch(`http://127.0.0.1:8000/ai/${symbol}/commentary`)
+    fetchPrice();
+    const interval = setInterval(fetchPrice, 30000);
+
+    fetch(`http://127.0.0.1:8000/ai/${symbol}/commentary`)
       .then((res) => res.json())
       .then((data) => {
         if (data.positive_points && data.negative_points) {
@@ -62,6 +69,8 @@ export default function StockDetail({ symbol }: { symbol: string }) {
         }
       })
       .catch(() => setCommentary(null));
+
+    return () => clearInterval(interval);
   }, [symbol]);
 
   useEffect(() => {
@@ -88,9 +97,19 @@ export default function StockDetail({ symbol }: { symbol: string }) {
         {stock ? (
           <>
             <h1 className="text-2xl font-bold">{stock.symbol}</h1>
-            <p className="mt-2 text-3xl font-semibold text-green-400">
-              ${stock.price}
-            </p>
+            <div className="mt-2 flex items-baseline gap-3">
+              <p className="text-3xl font-semibold text-green-400">
+                ${stock.price}
+              </p>
+              <p
+                className={`text-sm font-medium ${
+                  stock.change_percent >= 0 ? "text-green-400" : "text-red-400"
+                }`}
+              >
+                {stock.change_percent >= 0 ? "↑" : "↓"}{" "}
+                {Math.abs(stock.change_percent)}%
+              </p>
+            </div>
 
             <div className="mt-6 flex gap-2">
               {RANGES.map((r) => (
@@ -153,7 +172,6 @@ export default function StockDetail({ symbol }: { symbol: string }) {
       </div>
 
       {/* Sag taraf: AI yorumu (1/3 genislik) */}
-            {/* Sag taraf: AI yorumu (1/3 genislik) */}
       <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-6 text-white shadow-lg">
         <h2 className="mb-4 text-lg font-bold text-neutral-200">
           AI Değerlendirmesi

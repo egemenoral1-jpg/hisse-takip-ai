@@ -25,14 +25,21 @@ export default function Home() {
   const [prices, setPrices] = useState<Record<string, StockPrice>>({});
   const [searchInput, setSearchInput] = useState("");
 
-    useEffect(() => {
-    POPULAR_STOCKS.forEach((s) => {
-      fetch(`http://127.0.0.1:8000/stocks/${s.symbol}`)
-        .then((res) => res.json())
-        .then((data: StockPrice) => {
-          setPrices((prev) => ({ ...prev, [s.symbol]: data }));
-        });
-    });
+      useEffect(() => {
+    const fetchPrices = () => {
+      POPULAR_STOCKS.forEach((s) => {
+        fetch(`http://127.0.0.1:8000/stocks/${s.symbol}`)
+          .then((res) => res.json())
+          .then((data: StockPrice) => {
+            setPrices((prev) => ({ ...prev, [s.symbol]: data }));
+          });
+      });
+    };
+
+    fetchPrices();
+    const interval = setInterval(fetchPrices, 30000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const handleSearch = (e: React.FormEvent) => {
