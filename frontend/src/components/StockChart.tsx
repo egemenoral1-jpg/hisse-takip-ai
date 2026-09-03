@@ -26,6 +26,10 @@ export default function StockChart({ data }: { data: HistoryPoint[] }) {
         vertLines: { color: "#262626" },
         horzLines: { color: "#262626" },
       },
+      timeScale: {
+    timeVisible: true,
+    secondsVisible: false,
+  },
     });
 
     const lineSeries = chart.addSeries(LineSeries, {
@@ -34,9 +38,9 @@ export default function StockChart({ data }: { data: HistoryPoint[] }) {
 });
 
     const formatted = data.map((point) => ({
-      time: point.time.split("T")[0],
-      value: point.close,
-    }));
+  time: Math.floor(new Date(point.time).getTime() / 1000) as any,
+  value: point.close,
+}));
 
     lineSeries.setData(formatted);
     chart.timeScale().fitContent();
