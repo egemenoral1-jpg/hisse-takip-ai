@@ -10,6 +10,9 @@ type StockPrice = {
 
 type HistoryPoint = {
   time: string;
+  open: number;
+  high: number;
+  low: number;
   close: number;
 };
 
@@ -33,15 +36,14 @@ export default function Home() {
   const [history, setHistory] = useState<HistoryPoint[]>([]);
   const [risk, setRisk] = useState<RiskData | null>(null);
   const [selectedRange, setSelectedRange] = useState("3a");
+  const [chartType, setChartType] = useState<"line" | "candle">("line");
 
-  // Fiyat sadece bir kere cekilir
   useEffect(() => {
     fetch("http://127.0.0.1:8000/stocks/AAPL")
       .then((res) => res.json())
       .then((data) => setStock(data));
   }, []);
 
-  // Aralik degistikce grafik ve risk yeniden cekilir
   useEffect(() => {
     fetch(`http://127.0.0.1:8000/stocks/AAPL/history?range=${selectedRange}`)
       .then((res) => res.json())
@@ -85,8 +87,31 @@ export default function Home() {
               ))}
             </div>
 
+            <div className="mt-3 flex gap-2">
+              <button
+                onClick={() => setChartType("line")}
+                className={`rounded-lg px-3 py-1 text-sm font-medium transition-colors ${
+                  chartType === "line"
+                    ? "bg-neutral-100 text-black"
+                    : "bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
+                }`}
+              >
+                Çizgi
+              </button>
+              <button
+                onClick={() => setChartType("candle")}
+                className={`rounded-lg px-3 py-1 text-sm font-medium transition-colors ${
+                  chartType === "candle"
+                    ? "bg-neutral-100 text-black"
+                    : "bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
+                }`}
+              >
+                Mum
+              </button>
+            </div>
+
             <div className="mt-6">
-              <StockChart data={history} />
+              <StockChart data={history} chartType={chartType} />
             </div>
 
             {risk && (
