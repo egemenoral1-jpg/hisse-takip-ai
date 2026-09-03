@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Sparkline from "@/components/Sparkline";
+import { STOCK_LIST } from "@/lib/stockList";
 
 type StockPrice = {
   symbol: string;
@@ -24,19 +25,20 @@ const POPULAR_STOCKS = [
 export default function Home() {
   const router = useRouter();
   const [prices, setPrices] = useState<Record<string, StockPrice>>({});
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [sparklines, setSparklines] = useState<Record<string, number[]>>({});
   const [searchInput, setSearchInput] = useState("");
 
-  useEffect(() => {
-    const fetchPrices = () => {
-      POPULAR_STOCKS.forEach((s) => {
-        fetch(`http://127.0.0.1:8000/stocks/${s.symbol}`)
-          .then((res) => res.json())
-          .then((data: StockPrice) => {
-            setPrices((prev) => ({ ...prev, [s.symbol]: data }));
-          });
-      });
-    };
+    useEffect(() => {
+      const fetchPrices = () => {
+        POPULAR_STOCKS.forEach((s) => {
+          fetch(`http://127.0.0.1:8000/stocks/${s.symbol}`)
+            .then((res) => res.json())
+            .then((data: StockPrice) => {
+              setPrices((prev) => ({ ...prev, [s.symbol]: data }));
+            });
+        });
+      };
 
     const fetchSparklines = () => {
       POPULAR_STOCKS.forEach((s) => {
@@ -63,6 +65,20 @@ export default function Home() {
     if (symbol) {
       router.push(`/hisse/${symbol}`);
     }
+  };
+    const filteredSuggestions =
+    searchInput.trim().length > 0
+      ? STOCK_LIST.filter(
+          (s) =>
+            s.symbol.toLowerCase().startsWith(searchInput.trim().toLowerCase()) ||
+            s.name.toLowerCase().includes(searchInput.trim().toLowerCase())
+        ).slice(0, 6)
+      : [];
+
+  const goToSymbol = (sym: string) => {
+    setSearchInput("");
+    setShowSuggestions(false);
+    router.push(`/hisse/${sym}`);
   };
 
   const tickerList = [...POPULAR_STOCKS, ...POPULAR_STOCKS]; // kesintisiz kaymasi icin ikiye katliyoruz
@@ -139,26 +155,50 @@ export default function Home() {
             hazırladığı olumlu/olumsuz analizi tek ekranda gör.
           </p>
 
-          <form
-            onSubmit={handleSearch}
-            className="mx-auto mt-9 flex max-w-md gap-2"
-          >
-            <input
-              type="text"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Sembol ara (ör. AAPL, TSLA)"
-              className="flex-1 rounded-lg border px-4 py-3 text-sm outline-none transition-colors placeholder:text-[#5A6273] focus:border-[#C9A24B]"
-              style={{ borderColor: "#242B38", backgroundColor: "#111826" }}
-            />
-            <button
-              type="submit"
-              className="rounded-lg px-5 py-3 text-sm font-medium text-[#0A0E16] transition-opacity hover:opacity-90"
-              style={{ backgroundColor: "#C9A24B" }}
-            >
-              Ara
-            </button>
-          </form>
+                   <div className="relative mx-auto mt-9 max-w-md">
+            <form onSubmit={handleSearch} className="flex gap-2">
+              <input
+                type="text"
+                value={searchInput}
+                onChange={(e) => {
+                  setSearchInput(e.target.value);
+                  setShowSuggestions(true);
+                }}
+                onFocus={() => setShowSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                placeholder="Sembol ara (ör. AAPL, TSLA)"
+                className="flex-1 rounded-lg border px-4 py-3 text-sm outline-none transition-colors placeholder:text-[#5A6273] focus:border-[#C9A24B]"
+                style={{ borderColor: "#242B38", backgroundColor: "#111826" }}
+              />
+              <button
+                type="submit"
+                className="rounded-lg px-5 py-3 text-sm font-medium text-[#0A0E16] transition-opacity hover:opacity-90"
+                style={{ backgroundColor: "#C9A24B" }}
+              >
+                Ara
+              </button>
+            </form>
+
+            {showSuggestions && filteredSuggestions.length > 0 && (
+              <div
+                className="absolute left-0 right-0 top-full z-10 mt-2 overflow-hidden rounded-lg border text-left shadow-xl"
+                style={{ borderColor: "#242B38", backgroundColor: "#111826" }}
+              >
+                {filteredSuggestions.map((s) => (
+                  <button
+                    key={s.symbol}
+                    onClick={() => goToSymbol(s.symbol)}
+                    className="flex w-full items-center justify-between px-4 py-2.5 text-left transition-colors hover:bg-[#1A2130]"
+                  >
+                    <span className="font-[family-name:var(--font-mono)] text-sm text-[#E8E6E0]">
+                      {s.symbol}
+                    </span>
+                    <span className="text-xs text-[#6B7280]">{s.name}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

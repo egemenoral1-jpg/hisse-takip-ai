@@ -62,12 +62,21 @@ export default function StockDetail({ symbol }: { symbol: string }) {
   const [commentary, setCommentary] = useState<CommentaryData | null>(null);
   const [selectedRange, setSelectedRange] = useState("3a");
   const [chartType, setChartType] = useState<"line" | "candle">("line");
+  const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    const fetchPrice = () => {
+           const fetchPrice = () => {
       fetch(`http://127.0.0.1:8000/stocks/${symbol}`)
         .then((res) => res.json())
-        .then((data) => setStock(data));
+        .then((data) => {
+          if (data.symbol && data.price !== undefined) {
+            setStock(data);
+            setNotFound(false);
+          } else {
+            setNotFound(true);
+          }
+        })
+        .catch(() => setNotFound(true));
     };
 
     const fetchMarketStatus = () => {
@@ -101,14 +110,24 @@ export default function StockDetail({ symbol }: { symbol: string }) {
     return () => clearInterval(interval);
   }, [symbol]);
 
-  useEffect(() => {
+    useEffect(() => {
     fetch(`http://127.0.0.1:8000/stocks/${symbol}/history?range=${selectedRange}`)
       .then((res) => res.json())
-      .then((data) => setHistory(data));
+      .then((data) => {
+        setHistory(Array.isArray(data) ? data : []);
+      })
+      .catch(() => setHistory([]));
 
     fetch(`http://127.0.0.1:8000/stocks/${symbol}/risk?range=${selectedRange}`)
       .then((res) => res.json())
-      .then((data) => setRisk(data));
+      .then((data) => {
+        if (data.risk_level) {
+          setRisk(data);
+        } else {
+          setRisk(null);
+        }
+      })
+      .catch(() => setRisk(null));
   }, [symbol, selectedRange]);
 
   const riskColor =
@@ -270,6 +289,15 @@ export default function StockDetail({ symbol }: { symbol: string }) {
               </div>
             )}
           </>
+               ) : notFound ? (
+          <div className="py-12 text-center">
+            <p className="text-lg font-medium text-[#E8E6E0]">
+              &quot;{symbol}&quot; bulunamadı
+            </p>
+            <p className="mt-2 text-sm text-[#6B7280]">
+              Bu sembole ait bir hisse verisi yok. Sembolü kontrol edip tekrar deneyin.
+            </p>
+          </div>
         ) : (
           <div className="space-y-4">
             <div className="skeleton h-7 w-20" />

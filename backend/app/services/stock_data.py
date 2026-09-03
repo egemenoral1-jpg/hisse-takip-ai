@@ -23,6 +23,11 @@ def get_stock_price(symbol: str):
     if info.empty:
         return None
 
+    info = info.dropna(subset=["Close"])
+
+    if info.empty:
+        return None
+
     last_price = info["Close"].iloc[-1]
     prev_price = info["Close"].iloc[-2] if len(info) >= 2 else last_price
 
