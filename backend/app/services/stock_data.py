@@ -2,16 +2,22 @@ import yfinance as yf
 
 def get_stock_price(symbol: str):
     stock = yf.Ticker(symbol)
-    info = stock.history(period="1d")
+    info = stock.history(period="5d")
 
     if info.empty:
         return None
 
     last_price = info["Close"].iloc[-1]
+    prev_price = info["Close"].iloc[-2] if len(info) >= 2 else last_price
+
+    change = last_price - prev_price
+    change_percent = (change / prev_price) * 100 if prev_price != 0 else 0
 
     return {
         "symbol": symbol,
-        "price": round(last_price, 2)
+        "price": round(last_price, 2),
+        "change": round(change, 2),
+        "change_percent": round(change_percent, 2)
     }
 
 

@@ -7,6 +7,8 @@ import Link from "next/link";
 type StockPrice = {
   symbol: string;
   price: number;
+  change: number;
+  change_percent: number;
 };
 
 const POPULAR_STOCKS = [
@@ -20,15 +22,15 @@ const POPULAR_STOCKS = [
 
 export default function Home() {
   const router = useRouter();
-  const [prices, setPrices] = useState<Record<string, number>>({});
+  const [prices, setPrices] = useState<Record<string, StockPrice>>({});
   const [searchInput, setSearchInput] = useState("");
 
-  useEffect(() => {
+    useEffect(() => {
     POPULAR_STOCKS.forEach((s) => {
       fetch(`http://127.0.0.1:8000/stocks/${s.symbol}`)
         .then((res) => res.json())
         .then((data: StockPrice) => {
-          setPrices((prev) => ({ ...prev, [s.symbol]: data.price }));
+          setPrices((prev) => ({ ...prev, [s.symbol]: data }));
         });
     });
   }, []);
@@ -91,11 +93,25 @@ export default function Home() {
                   </p>
                   <p className="text-sm text-neutral-400">{s.name}</p>
                 </div>
-                <p className="text-xl font-semibold text-green-400">
-                  {prices[s.symbol] !== undefined
-                    ? `$${prices[s.symbol]}`
-                    : "..."}
-                </p>
+                                <div className="text-right">
+                  <p className="text-xl font-semibold text-green-400">
+                    {prices[s.symbol] !== undefined
+                      ? `$${prices[s.symbol].price}`
+                      : "..."}
+                  </p>
+                  {prices[s.symbol] !== undefined && (
+                    <p
+                      className={`text-xs font-medium ${
+                        prices[s.symbol].change_percent >= 0
+                          ? "text-green-400"
+                          : "text-red-400"
+                      }`}
+                    >
+                      {prices[s.symbol].change_percent >= 0 ? "↑" : "↓"}{" "}
+                      {Math.abs(prices[s.symbol].change_percent)}%
+                    </p>
+                  )}
+                </div>
               </div>
             </Link>
           ))}
