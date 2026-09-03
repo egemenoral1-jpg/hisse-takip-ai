@@ -63,6 +63,11 @@ def get_stock_history(symbol: str, range_key: str):
     if data.empty:
         return None
 
+    data = data.dropna(subset=["Open", "High", "Low", "Close"])
+
+    if data.empty:
+        return None
+
     result = []
     for timestamp, row in data.iterrows():
         result.append({
@@ -79,6 +84,11 @@ def get_stock_history(symbol: str, range_key: str):
 def get_52_week_range(symbol: str):
     stock = yf.Ticker(symbol)
     data = stock.history(period="1y")
+
+    if data.empty:
+        return None
+
+    data = data.dropna(subset=["High", "Low", "Close"])
 
     if data.empty:
         return None

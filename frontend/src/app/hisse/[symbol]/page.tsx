@@ -8,19 +8,19 @@ export default async function StockPage({
 }) {
   const { symbol } = await params;
   const upperSymbol = symbol.toUpperCase();
+  const displaySymbol = upperSymbol.replace(/\.IS$/i, "");
 
   return (
     <main
       className="relative min-h-screen overflow-hidden p-8"
       style={{ backgroundColor: "#0A0E16" }}
     >
-      {/* Arka plan: dev, soluk hisse sembolu */}
       <div
         aria-hidden
         className="pointer-events-none absolute -right-10 -top-10 select-none font-[family-name:var(--font-display)] text-[280px] font-medium leading-none opacity-[0.04]"
         style={{ color: "#C9A24B" }}
       >
-        {upperSymbol}
+        {displaySymbol}
       </div>
 
       <div className="relative mx-auto mb-6 max-w-6xl">

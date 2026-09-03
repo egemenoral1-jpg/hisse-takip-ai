@@ -65,7 +65,7 @@ export default function StockDetail({ symbol }: { symbol: string }) {
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-           const fetchPrice = () => {
+    const fetchPrice = () => {
       fetch(`http://127.0.0.1:8000/stocks/${symbol}`)
         .then((res) => res.json())
         .then((data) => {
@@ -110,7 +110,7 @@ export default function StockDetail({ symbol }: { symbol: string }) {
     return () => clearInterval(interval);
   }, [symbol]);
 
-    useEffect(() => {
+  useEffect(() => {
     fetch(`http://127.0.0.1:8000/stocks/${symbol}/history?range=${selectedRange}`)
       .then((res) => res.json())
       .then((data) => {
@@ -139,7 +139,6 @@ export default function StockDetail({ symbol }: { symbol: string }) {
 
   return (
     <div className="fade-in grid w-full max-w-6xl grid-cols-1 gap-6 lg:grid-cols-3">
-      {/* Sol taraf: grafik + risk (2/3 genislik) */}
       <div
         className="rounded-xl border p-8 text-[#E8E6E0] shadow-lg lg:col-span-2"
         style={{ borderColor: "#1E2530", backgroundColor: "#0D1220" }}
@@ -148,7 +147,7 @@ export default function StockDetail({ symbol }: { symbol: string }) {
           <>
             <div className="flex items-center gap-3">
               <h1 className="font-[family-name:var(--font-mono)] text-2xl font-medium tracking-wide">
-                {stock.symbol}
+                {stock.symbol.replace(/\.IS$/i, "")}
               </h1>
               {marketStatus && (
                 <div className="flex items-center gap-1.5">
@@ -231,10 +230,7 @@ export default function StockDetail({ symbol }: { symbol: string }) {
                   <span>52 Hafta Düşük: ${weekRange.week_52_low}</span>
                   <span>52 Hafta Yüksek: ${weekRange.week_52_high}</span>
                 </div>
-                <div
-                  className="relative h-1.5 rounded-full"
-                  style={{ backgroundColor: "#1E2530" }}
-                >
+                <div className="relative h-1.5 rounded-full" style={{ backgroundColor: "#1E2530" }}>
                   <div
                     className="absolute top-1/2 h-3 w-3 -translate-y-1/2 rounded-full border-2"
                     style={{
@@ -258,27 +254,17 @@ export default function StockDetail({ symbol }: { symbol: string }) {
                 style={{ borderColor: "#1E2530", backgroundColor: "#0A0E16" }}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-base font-medium text-[#B8BFC9]">
-                    Risk Seviyesi
-                  </span>
-                  <span className={`text-xl font-bold ${riskColor}`}>
-                    {risk.risk_level}
-                  </span>
+                  <span className="text-base font-medium text-[#B8BFC9]">Risk Seviyesi</span>
+                  <span className={`text-xl font-bold ${riskColor}`}>{risk.risk_level}</span>
                 </div>
                 <div className="mt-3 flex gap-3">
-                  <div
-                    className="flex-1 rounded-lg border px-3 py-2"
-                    style={{ borderColor: "#1E2530", backgroundColor: "#0D1220" }}
-                  >
+                  <div className="flex-1 rounded-lg border px-3 py-2" style={{ borderColor: "#1E2530", backgroundColor: "#0D1220" }}>
                     <p className="text-xs text-[#6B7280]">Günlük Oynaklık</p>
                     <p className="mt-0.5 font-[family-name:var(--font-mono)] text-base text-[#E8E6E0]">
                       %{risk.daily_risk_percentage}
                     </p>
                   </div>
-                  <div
-                    className="flex-1 rounded-lg border px-3 py-2"
-                    style={{ borderColor: "#1E2530", backgroundColor: "#0D1220" }}
-                  >
+                  <div className="flex-1 rounded-lg border px-3 py-2" style={{ borderColor: "#1E2530", backgroundColor: "#0D1220" }}>
                     <p className="text-xs text-[#6B7280]">Yıllık Oynaklık</p>
                     <p className="mt-0.5 font-[family-name:var(--font-mono)] text-base text-[#E8E6E0]">
                       %{risk.annual_risk_percentage}
@@ -289,11 +275,9 @@ export default function StockDetail({ symbol }: { symbol: string }) {
               </div>
             )}
           </>
-               ) : notFound ? (
+        ) : notFound ? (
           <div className="py-12 text-center">
-            <p className="text-lg font-medium text-[#E8E6E0]">
-              &quot;{symbol}&quot; bulunamadı
-            </p>
+            <p className="text-lg font-medium text-[#E8E6E0]">&quot;{symbol}&quot; bulunamadı</p>
             <p className="mt-2 text-sm text-[#6B7280]">
               Bu sembole ait bir hisse verisi yok. Sembolü kontrol edip tekrar deneyin.
             </p>
@@ -307,7 +291,6 @@ export default function StockDetail({ symbol }: { symbol: string }) {
         )}
       </div>
 
-      {/* Sag taraf: AI yorumu (1/3 genislik) */}
       <div
         className="rounded-xl border p-6 text-[#E8E6E0] shadow-lg"
         style={{ borderColor: "#1E2530", backgroundColor: "#0D1220" }}
@@ -319,49 +302,30 @@ export default function StockDetail({ symbol }: { symbol: string }) {
         {commentary ? (
           <>
             <div className="mb-5">
-              <h3 className="mb-2 text-sm font-semibold text-emerald-400">
-                Olumlu Yönler
-              </h3>
+              <h3 className="mb-2 text-sm font-semibold text-emerald-400">Olumlu Yönler</h3>
               <ul className="space-y-1.5">
                 {commentary.positive_points.map((point, i) => (
-                  <li key={i} className="text-sm text-[#B8BFC9]">
-                    • {point}
-                  </li>
+                  <li key={i} className="text-sm text-[#B8BFC9]">• {point}</li>
                 ))}
               </ul>
             </div>
 
             <div className="mb-5">
-              <h3 className="mb-2 text-sm font-semibold text-red-400">
-                Olumsuz Yönler
-              </h3>
+              <h3 className="mb-2 text-sm font-semibold text-red-400">Olumsuz Yönler</h3>
               <ul className="space-y-1.5">
                 {commentary.negative_points.map((point, i) => (
-                  <li key={i} className="text-sm text-[#B8BFC9]">
-                    • {point}
-                  </li>
+                  <li key={i} className="text-sm text-[#B8BFC9]">• {point}</li>
                 ))}
               </ul>
             </div>
 
-            <div
-              className="rounded-xl border p-4"
-              style={{ borderColor: "#1E2530", backgroundColor: "#0A0E16" }}
-            >
+            <div className="rounded-xl border p-4" style={{ borderColor: "#1E2530", backgroundColor: "#0A0E16" }}>
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-sm font-semibold text-[#E8E6E0]">
-                  AI Tahmini
-                </span>
-                <span className="text-xs font-medium text-[#8B93A1]">
-                  Risk: {commentary.prediction_risk}
-                </span>
+                <span className="text-sm font-semibold text-[#E8E6E0]">AI Tahmini</span>
+                <span className="text-xs font-medium text-[#8B93A1]">Risk: {commentary.prediction_risk}</span>
               </div>
-              <p className="text-sm leading-relaxed text-[#B8BFC9]">
-                {commentary.prediction}
-              </p>
-              <p className="mt-2 text-xs text-[#5A6273]">
-                Bu bir yatırım tavsiyesi değildir.
-              </p>
+              <p className="text-sm leading-relaxed text-[#B8BFC9]">{commentary.prediction}</p>
+              <p className="mt-2 text-xs text-[#5A6273]">Bu bir yatırım tavsiyesi değildir.</p>
             </div>
           </>
         ) : (

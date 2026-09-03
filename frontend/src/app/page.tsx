@@ -25,20 +25,20 @@ const POPULAR_STOCKS = [
 export default function Home() {
   const router = useRouter();
   const [prices, setPrices] = useState<Record<string, StockPrice>>({});
-  const [showSuggestions, setShowSuggestions] = useState(false);
   const [sparklines, setSparklines] = useState<Record<string, number[]>>({});
   const [searchInput, setSearchInput] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
-    useEffect(() => {
-      const fetchPrices = () => {
-        POPULAR_STOCKS.forEach((s) => {
-          fetch(`http://127.0.0.1:8000/stocks/${s.symbol}`)
-            .then((res) => res.json())
-            .then((data: StockPrice) => {
-              setPrices((prev) => ({ ...prev, [s.symbol]: data }));
-            });
-        });
-      };
+  useEffect(() => {
+    const fetchPrices = () => {
+      POPULAR_STOCKS.forEach((s) => {
+        fetch(`http://127.0.0.1:8000/stocks/${s.symbol}`)
+          .then((res) => res.json())
+          .then((data: StockPrice) => {
+            setPrices((prev) => ({ ...prev, [s.symbol]: data }));
+          });
+      });
+    };
 
     const fetchSparklines = () => {
       POPULAR_STOCKS.forEach((s) => {
@@ -59,14 +59,7 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    const symbol = searchInput.trim().toUpperCase();
-    if (symbol) {
-      router.push(`/hisse/${symbol}`);
-    }
-  };
-    const filteredSuggestions =
+  const filteredSuggestions =
     searchInput.trim().length > 0
       ? STOCK_LIST.filter(
           (s) =>
@@ -75,13 +68,28 @@ export default function Home() {
         ).slice(0, 6)
       : [];
 
-  const goToSymbol = (sym: string) => {
+  const goToSymbol = (apiSym: string) => {
     setSearchInput("");
     setShowSuggestions(false);
-    router.push(`/hisse/${sym}`);
+    router.push(`/hisse/${apiSym}`);
   };
 
-  const tickerList = [...POPULAR_STOCKS, ...POPULAR_STOCKS]; // kesintisiz kaymasi icin ikiye katliyoruz
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const raw = searchInput.trim().toUpperCase();
+    if (!raw) return;
+
+    const match = STOCK_LIST.find(
+      (s) => s.symbol.toUpperCase() === raw || s.name.toUpperCase() === raw
+    );
+
+    const target = match ? match.apiSymbol : raw;
+    setSearchInput("");
+    setShowSuggestions(false);
+    router.push(`/hisse/${target}`);
+  };
+
+  const tickerList = [...POPULAR_STOCKS, ...POPULAR_STOCKS];
 
   return (
     <main
@@ -125,12 +133,8 @@ export default function Home() {
         </div>
       </div>
 
-            {/* Hero alani */}
-      <div
-        className="relative overflow-hidden border-b px-8 py-20"
-        style={{ borderColor: "#1E2530" }}
-      >
-        {/* Arka plan: grid deseni + parilti */}
+      {/* Hero alani */}
+      <div className="relative overflow-hidden border-b px-8 py-20" style={{ borderColor: "#1E2530" }}>
         <div
           className="pointer-events-none absolute inset-0"
           style={{
@@ -155,7 +159,7 @@ export default function Home() {
             hazırladığı olumlu/olumsuz analizi tek ekranda gör.
           </p>
 
-                   <div className="relative mx-auto mt-9 max-w-md">
+          <div className="relative mx-auto mt-9 max-w-md">
             <form onSubmit={handleSearch} className="flex gap-2">
               <input
                 type="text"
@@ -166,7 +170,7 @@ export default function Home() {
                 }}
                 onFocus={() => setShowSuggestions(true)}
                 onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-                placeholder="Sembol ara (ör. AAPL, TSLA)"
+                placeholder="Sembol ara (ör. AAPL, ASELS)"
                 className="flex-1 rounded-lg border px-4 py-3 text-sm outline-none transition-colors placeholder:text-[#5A6273] focus:border-[#C9A24B]"
                 style={{ borderColor: "#242B38", backgroundColor: "#111826" }}
               />
@@ -187,7 +191,7 @@ export default function Home() {
                 {filteredSuggestions.map((s) => (
                   <button
                     key={s.symbol}
-                    onClick={() => goToSymbol(s.symbol)}
+                    onClick={() => goToSymbol(s.apiSymbol)}
                     className="flex w-full items-center justify-between px-4 py-2.5 text-left transition-colors hover:bg-[#1A2130]"
                   >
                     <span className="font-[family-name:var(--font-mono)] text-sm text-[#E8E6E0]">
@@ -213,7 +217,7 @@ export default function Home() {
             const p = prices[s.symbol];
             const isUp = p ? p.change_percent >= 0 : true;
             return (
-                            <Link
+              <Link
                 key={s.symbol}
                 href={`/hisse/${s.symbol}`}
                 className="group fade-in rounded-xl border p-5 transition-colors"
