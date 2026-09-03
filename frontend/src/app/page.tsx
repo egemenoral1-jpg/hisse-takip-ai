@@ -131,7 +131,7 @@ export default function Home() {
         />
 
         <div className="relative mx-auto max-w-3xl text-center">
-          <h1 className="font-[family-name:var(--font-display)] text-5xl font-medium tracking-tight text-[#F3F1EA]">
+          <h1 className="fade-in font-[family-name:var(--font-display)] text-5xl font-medium tracking-tight text-[#F3F1EA]">
             Hisse takibi, yapay zekayla
           </h1>
           <p className="mx-auto mt-4 max-w-lg text-[15px] leading-relaxed text-[#8B93A1]">
@@ -173,11 +173,15 @@ export default function Home() {
             const p = prices[s.symbol];
             const isUp = p ? p.change_percent >= 0 : true;
             return (
-              <Link
+                            <Link
                 key={s.symbol}
                 href={`/hisse/${s.symbol}`}
-                className="group rounded-xl border p-5 transition-colors"
-                style={{ borderColor: "#1E2530", backgroundColor: "#0D1220" }}
+                className="group fade-in rounded-xl border p-5 transition-colors"
+                style={{
+                  borderColor: "#1E2530",
+                  backgroundColor: "#0D1220",
+                  animationDelay: `${POPULAR_STOCKS.indexOf(s) * 60}ms`,
+                }}
               >
                 <div className="flex items-start justify-between">
                   <div>
@@ -187,22 +191,31 @@ export default function Home() {
                     <p className="mt-0.5 text-sm text-[#6B7280]">{s.name}</p>
                   </div>
 
-                  {sparklines[s.symbol] && (
+                  {sparklines[s.symbol] ? (
                     <Sparkline data={sparklines[s.symbol]} isUp={isUp} />
+                  ) : (
+                    <div className="skeleton h-8 w-[100px]" />
                   )}
 
                   <div className="text-right">
-                    <p className="font-[family-name:var(--font-mono)] text-[15px] text-[#E8E6E0]">
-                      {p ? `$${p.price}` : "···"}
-                    </p>
-                    {p && (
-                      <p
-                        className={`mt-0.5 text-xs ${
-                          isUp ? "text-emerald-400" : "text-red-400"
-                        }`}
-                      >
-                        {isUp ? "↑" : "↓"} {Math.abs(p.change_percent)}%
-                      </p>
+                    {p ? (
+                      <>
+                        <p className="font-[family-name:var(--font-mono)] text-[15px] text-[#E8E6E0]">
+                          ${p.price}
+                        </p>
+                        <p
+                          className={`mt-0.5 text-xs ${
+                            isUp ? "text-emerald-400" : "text-red-400"
+                          }`}
+                        >
+                          {isUp ? "↑" : "↓"} {Math.abs(p.change_percent)}%
+                        </p>
+                      </>
+                    ) : (
+                      <div className="flex flex-col items-end gap-1">
+                        <div className="skeleton h-4 w-14" />
+                        <div className="skeleton h-3 w-10" />
+                      </div>
                     )}
                   </div>
                 </div>

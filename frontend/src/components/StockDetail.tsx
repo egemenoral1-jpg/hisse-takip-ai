@@ -92,7 +92,7 @@ export default function StockDetail({ symbol }: { symbol: string }) {
       : "text-red-400";
 
   return (
-    <div className="grid w-full max-w-6xl grid-cols-1 gap-6 lg:grid-cols-3">
+    <div className="fade-in grid w-full max-w-6xl grid-cols-1 gap-6 lg:grid-cols-3">
       {/* Sol taraf: grafik + risk (2/3 genislik) */}
       <div
         className="rounded-xl border p-8 text-[#E8E6E0] shadow-lg lg:col-span-2"
@@ -200,8 +200,12 @@ export default function StockDetail({ symbol }: { symbol: string }) {
               </div>
             )}
           </>
-        ) : (
-          <p className="text-[#E8E6E0]">Yukleniyor...</p>
+                ) : (
+          <div className="space-y-4">
+            <div className="skeleton h-7 w-20" />
+            <div className="skeleton h-9 w-32" />
+            <div className="skeleton h-64 w-full" />
+          </div>
         )}
       </div>
 
