@@ -1,3 +1,4 @@
+import json
 import google.generativeai as genai
 from app.core.config import GEMINI_API_KEY
 
@@ -7,19 +8,39 @@ def get_ai_commentary(symbol: str):
     model = genai.GenerativeModel("gemini-3.6-flash")
 
     prompt = f"""
-Sen bir finansal analiz asistanisin. {symbol} hissesi hakkinda kisa, tarafsiz bir yorum yaz.
+{symbol} hissesi hakkinda bir analiz hazirla.
 
-Yorumun sunlari icermeli:
-- Sirketin genel durumu ve sektorel konumu hakkinda 2-3 cumlelik kisa bir ozet
-- Son donemde one cikan onemli gelismeler (varsa)
-- Yatirim tavsiyesi VERME, sadece bilgilendirici ol
+Su formatta, SADECE gecerli JSON olarak cevap ver, baska hicbir metin ekleme:
 
-Turkce yaz, 4-5 cumleyi gecme, resmi ama anlasilir bir dil kullan.
+{{
+  "positive_points": ["madde 1", "madde 2", "madde 3"],
+  "negative_points": ["madde 1", "madde 2", "madde 3"],
+  "prediction": "AI'nin kisa tahmin metni (yatirim tavsiyesi degil, sadece degerlendirme)",
+  "prediction_risk": "Dusuk" | "Orta" | "Yuksek"
+}}
+
+Kurallar:
+- positive_points: sirketle ilgili bilinen olumlu yonler/gelismeler (2-4 madde)
+- negative_points: sirketle ilgili bilinen olumsuz yonler/riskler (2-4 madde)
+- prediction: Kesinlikle yatirim tavsiyesi VERME, sadece "genel tabloya gore sirketin durumu su yonde ilerliyor gibi gorunuyor" tarzinda bilgilendirici bir tahmin
+- prediction_risk: bu tahminin ne kadar belirsiz/riskli oldugu
+- Turkce yaz
 """
 
     response = model.generate_content(prompt)
 
+    text = response.text.strip()
+    if text.startswith("```"):
+        text = text.split("```")[1]
+        if text.startswith("json"):
+            text = text[4:]
+
+    data = json.loads(text)
+
     return {
         "symbol": symbol,
-        "commentary": response.text
+        "positive_points": data.get("positive_points", []),
+        "negative_points": data.get("negative_points", []),
+        "prediction": data.get("prediction", ""),
+        "prediction_risk": data.get("prediction_risk", "Orta"),
     }
