@@ -22,6 +22,11 @@ type RiskData = {
   comment: string;
 };
 
+type CommentaryData = {
+  symbol: string;
+  commentary: string;
+};
+
 const RANGES = [
   { key: "24s", label: "24S" },
   { key: "1h", label: "1H" },
@@ -35,6 +40,7 @@ export default function StockDetail({ symbol }: { symbol: string }) {
   const [stock, setStock] = useState<StockPrice | null>(null);
   const [history, setHistory] = useState<HistoryPoint[]>([]);
   const [risk, setRisk] = useState<RiskData | null>(null);
+  const [commentary, setCommentary] = useState<CommentaryData | null>(null);
   const [selectedRange, setSelectedRange] = useState("3a");
   const [chartType, setChartType] = useState<"line" | "candle">("line");
 
@@ -42,6 +48,10 @@ export default function StockDetail({ symbol }: { symbol: string }) {
     fetch(`http://127.0.0.1:8000/stocks/${symbol}`)
       .then((res) => res.json())
       .then((data) => setStock(data));
+
+    fetch(`http://127.0.0.1:8000/ai/${symbol}/commentary`)
+      .then((res) => res.json())
+      .then((data) => setCommentary(data));
   }, [symbol]);
 
   useEffect(() => {
@@ -62,72 +72,89 @@ export default function StockDetail({ symbol }: { symbol: string }) {
       : "text-red-400";
 
   return (
-    <div className="w-full max-w-2xl rounded-2xl border border-neutral-800 bg-neutral-900 p-8 text-white shadow-lg">
-      {stock ? (
-        <>
-          <h1 className="text-2xl font-bold">{stock.symbol}</h1>
-          <p className="mt-2 text-3xl font-semibold text-green-400">
-            ${stock.price}
-          </p>
+    <div className="grid w-full max-w-6xl grid-cols-1 gap-6 lg:grid-cols-3">
+      {/* Sol taraf: grafik + risk (2/3 genislik) */}
+      <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-8 text-white shadow-lg lg:col-span-2">
+        {stock ? (
+          <>
+            <h1 className="text-2xl font-bold">{stock.symbol}</h1>
+            <p className="mt-2 text-3xl font-semibold text-green-400">
+              ${stock.price}
+            </p>
 
-          <div className="mt-6 flex gap-2">
-            {RANGES.map((r) => (
+            <div className="mt-6 flex gap-2">
+              {RANGES.map((r) => (
+                <button
+                  key={r.key}
+                  onClick={() => setSelectedRange(r.key)}
+                  className={`rounded-lg px-3 py-1 text-sm font-medium transition-colors ${
+                    selectedRange === r.key
+                      ? "bg-green-500 text-black"
+                      : "bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
+                  }`}
+                >
+                  {r.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-3 flex gap-2">
               <button
-                key={r.key}
-                onClick={() => setSelectedRange(r.key)}
+                onClick={() => setChartType("line")}
                 className={`rounded-lg px-3 py-1 text-sm font-medium transition-colors ${
-                  selectedRange === r.key
-                    ? "bg-green-500 text-black"
+                  chartType === "line"
+                    ? "bg-neutral-100 text-black"
                     : "bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
                 }`}
               >
-                {r.label}
+                Çizgi
               </button>
-            ))}
-          </div>
-
-          <div className="mt-3 flex gap-2">
-            <button
-              onClick={() => setChartType("line")}
-              className={`rounded-lg px-3 py-1 text-sm font-medium transition-colors ${
-                chartType === "line"
-                  ? "bg-neutral-100 text-black"
-                  : "bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
-              }`}
-            >
-              Çizgi
-            </button>
-            <button
-              onClick={() => setChartType("candle")}
-              className={`rounded-lg px-3 py-1 text-sm font-medium transition-colors ${
-                chartType === "candle"
-                  ? "bg-neutral-100 text-black"
-                  : "bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
-              }`}
-            >
-              Mum
-            </button>
-          </div>
-
-          <div className="mt-6">
-            <StockChart data={history} chartType={chartType} />
-          </div>
-
-          {risk && (
-            <div className="mt-6 rounded-xl border border-neutral-800 bg-neutral-950 p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-neutral-400">Risk Seviyesi</span>
-                <span className={`text-lg font-bold ${riskColor}`}>
-                  {risk.risk_level} (%{risk.risk_percentage})
-                </span>
-              </div>
-              <p className="mt-2 text-sm text-neutral-400">{risk.comment}</p>
+              <button
+                onClick={() => setChartType("candle")}
+                className={`rounded-lg px-3 py-1 text-sm font-medium transition-colors ${
+                  chartType === "candle"
+                    ? "bg-neutral-100 text-black"
+                    : "bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
+                }`}
+              >
+                Mum
+              </button>
             </div>
-          )}
-        </>
-      ) : (
-        <p>Yukleniyor...</p>
-      )}
+
+            <div className="mt-6">
+              <StockChart data={history} chartType={chartType} />
+            </div>
+
+            {risk && (
+              <div className="mt-6 rounded-xl border border-neutral-800 bg-neutral-950 p-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-neutral-400">Risk Seviyesi</span>
+                  <span className={`text-lg font-bold ${riskColor}`}>
+                    {risk.risk_level} (%{risk.risk_percentage})
+                  </span>
+                </div>
+                <p className="mt-2 text-sm text-neutral-400">{risk.comment}</p>
+              </div>
+            )}
+          </>
+        ) : (
+          <p className="text-white">Yukleniyor...</p>
+        )}
+      </div>
+
+      {/* Sag taraf: AI yorumu (1/3 genislik) */}
+      <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-6 text-white shadow-lg">
+        <h2 className="mb-3 text-lg font-bold text-neutral-200">
+          AI Değerlendirmesi
+        </h2>
+        {commentary ? (
+          <p className="text-sm leading-relaxed text-neutral-300">
+            {commentary.commentary}
+          </p>
+        ) : (
+          <p className="text-sm text-neutral-500">Yorum hazırlanıyor...</p>
+        )}
+      </div>
     </div>
   );
 }
