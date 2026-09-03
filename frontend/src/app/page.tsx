@@ -109,12 +109,28 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Hero alani */}
+            {/* Hero alani */}
       <div
-        className="border-b px-8 py-20"
+        className="relative overflow-hidden border-b px-8 py-20"
         style={{ borderColor: "#1E2530" }}
       >
-        <div className="mx-auto max-w-3xl text-center">
+        {/* Arka plan: grid deseni + parilti */}
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage:
+              "linear-gradient(#1A2130 1px, transparent 1px), linear-gradient(90deg, #1A2130 1px, transparent 1px)",
+            backgroundSize: "48px 48px",
+            maskImage: "radial-gradient(ellipse 60% 60% at 50% 40%, black 0%, transparent 75%)",
+            WebkitMaskImage: "radial-gradient(ellipse 60% 60% at 50% 40%, black 0%, transparent 75%)",
+          }}
+        />
+        <div
+          className="pointer-events-none absolute left-1/2 top-0 h-[400px] w-[600px] -translate-x-1/2 rounded-full opacity-20 blur-3xl"
+          style={{ backgroundColor: "#C9A24B" }}
+        />
+
+        <div className="relative mx-auto max-w-3xl text-center">
           <h1 className="font-[family-name:var(--font-display)] text-5xl font-medium tracking-tight text-[#F3F1EA]">
             Hisse takibi, yapay zekayla
           </h1>
