@@ -8,21 +8,21 @@ def calculate_risk(symbol: str, range_key: str):
 
     prices = [point["close"] for point in history]
 
-    # Gunluk getiri: her gunun onceki gune gore yuzde degisimi
     returns = []
     for i in range(1, len(prices)):
         daily_return = (prices[i] - prices[i - 1]) / prices[i - 1]
         returns.append(daily_return)
 
-    volatility = np.std(returns)  # oynaklik (standart sapma)
+    daily_volatility = np.std(returns)
+    annual_volatility = daily_volatility * np.sqrt(252)
 
-    # Yillik degil, secilen araliga gore olceklendirilmis risk yuzdesi
-    risk_percentage = round(volatility * 100, 2)
+    daily_risk_percentage = round(daily_volatility * 100, 2)
+    annual_risk_percentage = round(annual_volatility * 100, 2)
 
-    if risk_percentage < 1.5:
+    if daily_risk_percentage < 2.5:
         risk_level = "Dusuk"
         comment = "Bu donemde fiyat hareketleri nispeten sakin. Ancak piyasa kosullari degisirse (faiz karari, sirket haberi) risk hizla artabilir."
-    elif risk_percentage < 3.5:
+    elif daily_risk_percentage < 5:
         risk_level = "Orta"
         comment = "Fiyat orta duzeyde dalgalanma gosteriyor. Genel piyasa yonu bu hisseyi de etkileyebilir, ozellikle kotu bilancolar riski artirir."
     else:
@@ -32,7 +32,8 @@ def calculate_risk(symbol: str, range_key: str):
     return {
         "symbol": symbol,
         "range": range_key,
-        "risk_percentage": risk_percentage,
+        "daily_risk_percentage": daily_risk_percentage,
+        "annual_risk_percentage": annual_risk_percentage,
         "risk_level": risk_level,
         "comment": comment
     }

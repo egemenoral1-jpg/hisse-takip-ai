@@ -19,7 +19,8 @@ type HistoryPoint = {
 };
 
 type RiskData = {
-  risk_percentage: number;
+  daily_risk_percentage: number;
+  annual_risk_percentage: number;
   risk_level: string;
   comment: string;
 };
@@ -162,7 +163,7 @@ export default function StockDetail({ symbol }: { symbol: string }) {
               <StockChart data={history} chartType={chartType} />
             </div>
 
-            {risk && (
+                        {risk && (
               <div
                 className="mt-6 rounded-xl border p-4"
                 style={{ borderColor: "#1E2530", backgroundColor: "#0A0E16" }}
@@ -170,8 +171,12 @@ export default function StockDetail({ symbol }: { symbol: string }) {
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-[#8B93A1]">Risk Seviyesi</span>
                   <span className={`text-lg font-bold ${riskColor}`}>
-                    {risk.risk_level} (%{risk.risk_percentage})
+                    {risk.risk_level}
                   </span>
+                </div>
+                <div className="mt-1.5 flex gap-4 text-xs text-[#6B7280]">
+                  <span>Günlük: %{risk.daily_risk_percentage}</span>
+                  <span>Yıllık: %{risk.annual_risk_percentage}</span>
                 </div>
                 <p className="mt-2 text-sm text-[#8B93A1]">{risk.comment}</p>
               </div>
