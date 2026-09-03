@@ -52,9 +52,16 @@ export default function StockDetail({ symbol }: { symbol: string }) {
       .then((res) => res.json())
       .then((data) => setStock(data));
 
-    fetch(`http://127.0.0.1:8000/ai/${symbol}/commentary`)
+        fetch(`http://127.0.0.1:8000/ai/${symbol}/commentary`)
       .then((res) => res.json())
-      .then((data) => setCommentary(data));
+      .then((data) => {
+        if (data.positive_points && data.negative_points) {
+          setCommentary(data);
+        } else {
+          setCommentary(null);
+        }
+      })
+      .catch(() => setCommentary(null));
   }, [symbol]);
 
   useEffect(() => {
@@ -198,7 +205,10 @@ export default function StockDetail({ symbol }: { symbol: string }) {
             </div>
           </>
         ) : (
-          <p className="text-sm text-neutral-500">Yorum hazırlanıyor...</p>
+          <div className="flex items-center gap-2 text-sm text-neutral-500">
+            <div className="h-3 w-3 animate-spin rounded-full border-2 border-neutral-600 border-t-green-400" />
+            AI değerlendirme hazırlanıyor...
+          </div>
         )}
       </div>
     </div>
