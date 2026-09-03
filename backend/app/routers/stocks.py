@@ -25,3 +25,8 @@ def read_stock_risk(symbol: str, range: str = "1a"):
     if data is None:
         raise HTTPException(status_code=404, detail="Risk hesaplanamadi")
     return data
+from app.services.stock_data import get_market_status
+
+@router.get("/market/status")
+def read_market_status():
+    return get_market_status()

@@ -1,4 +1,18 @@
 import yfinance as yf
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
+def get_market_status():
+    ny_time = datetime.now(ZoneInfo("America/New_York"))
+    is_weekday = ny_time.weekday() < 5
+    market_open = ny_time.replace(hour=9, minute=30, second=0, microsecond=0)
+    market_close = ny_time.replace(hour=16, minute=0, second=0, microsecond=0)
+    is_open = is_weekday and market_open <= ny_time <= market_close
+
+    return {
+        "is_open": is_open,
+        "ny_time": ny_time.strftime("%H:%M")
+    }
 
 def get_stock_price(symbol: str):
     stock = yf.Ticker(symbol)
