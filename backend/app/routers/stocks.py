@@ -17,3 +17,11 @@ def read_stock_history(symbol: str, range: str = "1a"):
     if data is None:
         raise HTTPException(status_code=404, detail="Veri bulunamadi veya gecersiz aralik")
     return data
+from app.services.risk_engine import calculate_risk
+
+@router.get("/{symbol}/risk")
+def read_stock_risk(symbol: str, range: str = "1a"):
+    data = calculate_risk(symbol, range)
+    if data is None:
+        raise HTTPException(status_code=404, detail="Risk hesaplanamadi")
+    return data
