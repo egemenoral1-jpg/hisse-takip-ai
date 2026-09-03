@@ -38,6 +38,12 @@ type MarketStatus = {
   ny_time: string;
 };
 
+type WeekRangeData = {
+  week_52_high: number;
+  week_52_low: number;
+  current_price: number;
+};
+
 const RANGES = [
   { key: "24s", label: "24S" },
   { key: "1h", label: "1H" },
@@ -50,13 +56,14 @@ const RANGES = [
 export default function StockDetail({ symbol }: { symbol: string }) {
   const [stock, setStock] = useState<StockPrice | null>(null);
   const [marketStatus, setMarketStatus] = useState<MarketStatus | null>(null);
+  const [weekRange, setWeekRange] = useState<WeekRangeData | null>(null);
   const [history, setHistory] = useState<HistoryPoint[]>([]);
   const [risk, setRisk] = useState<RiskData | null>(null);
   const [commentary, setCommentary] = useState<CommentaryData | null>(null);
   const [selectedRange, setSelectedRange] = useState("3a");
   const [chartType, setChartType] = useState<"line" | "candle">("line");
 
-    useEffect(() => {
+  useEffect(() => {
     const fetchPrice = () => {
       fetch(`http://127.0.0.1:8000/stocks/${symbol}`)
         .then((res) => res.json())
@@ -69,8 +76,15 @@ export default function StockDetail({ symbol }: { symbol: string }) {
         .then((data) => setMarketStatus(data));
     };
 
+    const fetchWeekRange = () => {
+      fetch(`http://127.0.0.1:8000/stocks/${symbol}/52week`)
+        .then((res) => res.json())
+        .then((data) => setWeekRange(data));
+    };
+
     fetchPrice();
     fetchMarketStatus();
+    fetchWeekRange();
     const interval = setInterval(fetchPrice, 30000);
 
     fetch(`http://127.0.0.1:8000/ai/${symbol}/commentary`)
@@ -86,7 +100,6 @@ export default function StockDetail({ symbol }: { symbol: string }) {
 
     return () => clearInterval(interval);
   }, [symbol]);
-  
 
   useEffect(() => {
     fetch(`http://127.0.0.1:8000/stocks/${symbol}/history?range=${selectedRange}`)
@@ -114,7 +127,7 @@ export default function StockDetail({ symbol }: { symbol: string }) {
       >
         {stock ? (
           <>
-                        <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3">
               <h1 className="font-[family-name:var(--font-mono)] text-2xl font-medium tracking-wide">
                 {stock.symbol}
               </h1>
@@ -193,12 +206,39 @@ export default function StockDetail({ symbol }: { symbol: string }) {
               <StockChart data={history} chartType={chartType} />
             </div>
 
-                        {risk && (
+            {weekRange && (
+              <div className="mt-6">
+                <div className="mb-2 flex items-center justify-between text-xs text-[#6B7280]">
+                  <span>52 Hafta Düşük: ${weekRange.week_52_low}</span>
+                  <span>52 Hafta Yüksek: ${weekRange.week_52_high}</span>
+                </div>
+                <div
+                  className="relative h-1.5 rounded-full"
+                  style={{ backgroundColor: "#1E2530" }}
+                >
+                  <div
+                    className="absolute top-1/2 h-3 w-3 -translate-y-1/2 rounded-full border-2"
+                    style={{
+                      left: `${
+                        ((weekRange.current_price - weekRange.week_52_low) /
+                          (weekRange.week_52_high - weekRange.week_52_low)) *
+                        100
+                      }%`,
+                      backgroundColor: "#C9A24B",
+                      borderColor: "#0D1220",
+                      transform: "translate(-50%, -50%)",
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {risk && (
               <div
                 className="mt-6 rounded-xl border p-4"
                 style={{ borderColor: "#1E2530", backgroundColor: "#0A0E16" }}
               >
-                                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between">
                   <span className="text-base font-medium text-[#B8BFC9]">
                     Risk Seviyesi
                   </span>
@@ -230,7 +270,7 @@ export default function StockDetail({ symbol }: { symbol: string }) {
               </div>
             )}
           </>
-                ) : (
+        ) : (
           <div className="space-y-4">
             <div className="skeleton h-7 w-20" />
             <div className="skeleton h-9 w-32" />
