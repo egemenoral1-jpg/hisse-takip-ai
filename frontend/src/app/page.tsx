@@ -1,134 +1,61 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import StockChart from "@/components/StockChart";
+import Link from "next/link";
 
 type StockPrice = {
   symbol: string;
   price: number;
 };
 
-type HistoryPoint = {
-  time: string;
-  open: number;
-  high: number;
-  low: number;
-  close: number;
-};
-
-type RiskData = {
-  risk_percentage: number;
-  risk_level: string;
-  comment: string;
-};
-
-const RANGES = [
-  { key: "24s", label: "24S" },
-  { key: "1h", label: "1H" },
-  { key: "1a", label: "1A" },
-  { key: "3a", label: "3A" },
-  { key: "6a", label: "6A" },
-  { key: "12a", label: "12A" },
+const POPULAR_STOCKS = [
+  { symbol: "AAPL", name: "Apple" },
+  { symbol: "TSLA", name: "Tesla" },
+  { symbol: "MSFT", name: "Microsoft" },
+  { symbol: "GOOGL", name: "Alphabet" },
+  { symbol: "AMZN", name: "Amazon" },
+  { symbol: "NVDA", name: "Nvidia" },
 ];
 
 export default function Home() {
-  const [stock, setStock] = useState<StockPrice | null>(null);
-  const [history, setHistory] = useState<HistoryPoint[]>([]);
-  const [risk, setRisk] = useState<RiskData | null>(null);
-  const [selectedRange, setSelectedRange] = useState("3a");
-  const [chartType, setChartType] = useState<"line" | "candle">("line");
+  const [prices, setPrices] = useState<Record<string, number>>({});
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/stocks/AAPL")
-      .then((res) => res.json())
-      .then((data) => setStock(data));
+    POPULAR_STOCKS.forEach((s) => {
+      fetch(`http://127.0.0.1:8000/stocks/${s.symbol}`)
+        .then((res) => res.json())
+        .then((data: StockPrice) => {
+          setPrices((prev) => ({ ...prev, [s.symbol]: data.price }));
+        });
+    });
   }, []);
 
-  useEffect(() => {
-    fetch(`http://127.0.0.1:8000/stocks/AAPL/history?range=${selectedRange}`)
-      .then((res) => res.json())
-      .then((data) => setHistory(data));
-
-    fetch(`http://127.0.0.1:8000/stocks/AAPL/risk?range=${selectedRange}`)
-      .then((res) => res.json())
-      .then((data) => setRisk(data));
-  }, [selectedRange]);
-
-  const riskColor =
-    risk?.risk_level === "Dusuk"
-      ? "text-green-400"
-      : risk?.risk_level === "Orta"
-      ? "text-yellow-400"
-      : "text-red-400";
-
   return (
-    <main className="flex min-h-screen items-center justify-center bg-neutral-950 p-8">
-      <div className="w-full max-w-2xl rounded-2xl border border-neutral-800 bg-neutral-900 p-8 text-white shadow-lg">
-        {stock ? (
-          <>
-            <h1 className="text-2xl font-bold">{stock.symbol}</h1>
-            <p className="mt-2 text-3xl font-semibold text-green-400">
-              ${stock.price}
-            </p>
+    <main className="min-h-screen bg-neutral-950 p-8 text-white">
+      <div className="mx-auto max-w-4xl">
+        <h1 className="mb-8 text-3xl font-bold">Popüler Hisseler</h1>
 
-            <div className="mt-6 flex gap-2">
-              {RANGES.map((r) => (
-                <button
-                  key={r.key}
-                  onClick={() => setSelectedRange(r.key)}
-                  className={`rounded-lg px-3 py-1 text-sm font-medium transition-colors ${
-                    selectedRange === r.key
-                      ? "bg-green-500 text-black"
-                      : "bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
-                  }`}
-                >
-                  {r.label}
-                </button>
-              ))}
-            </div>
-
-            <div className="mt-3 flex gap-2">
-              <button
-                onClick={() => setChartType("line")}
-                className={`rounded-lg px-3 py-1 text-sm font-medium transition-colors ${
-                  chartType === "line"
-                    ? "bg-neutral-100 text-black"
-                    : "bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
-                }`}
-              >
-                Çizgi
-              </button>
-              <button
-                onClick={() => setChartType("candle")}
-                className={`rounded-lg px-3 py-1 text-sm font-medium transition-colors ${
-                  chartType === "candle"
-                    ? "bg-neutral-100 text-black"
-                    : "bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
-                }`}
-              >
-                Mum
-              </button>
-            </div>
-
-            <div className="mt-6">
-              <StockChart data={history} chartType={chartType} />
-            </div>
-
-            {risk && (
-              <div className="mt-6 rounded-xl border border-neutral-800 bg-neutral-950 p-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-neutral-400">Risk Seviyesi</span>
-                  <span className={`text-lg font-bold ${riskColor}`}>
-                    {risk.risk_level} (%{risk.risk_percentage})
-                  </span>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+          {POPULAR_STOCKS.map((s) => (
+            <Link
+              key={s.symbol}
+              href={`/hisse/${s.symbol}`}
+              className="rounded-2xl border border-neutral-800 bg-neutral-900 p-5 transition-colors hover:border-neutral-600"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-lg font-bold">{s.symbol}</p>
+                  <p className="text-sm text-neutral-400">{s.name}</p>
                 </div>
-                <p className="mt-2 text-sm text-neutral-400">{risk.comment}</p>
+                <p className="text-xl font-semibold text-green-400">
+                  {prices[s.symbol] !== undefined
+                    ? `$${prices[s.symbol]}`
+                    : "..."}
+                </p>
               </div>
-            )}
-          </>
-        ) : (
-          <p>Yukleniyor...</p>
-        )}
+            </Link>
+          ))}
+        </div>
       </div>
     </main>
   );
