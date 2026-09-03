@@ -85,25 +85,30 @@ export default function StockDetail({ symbol }: { symbol: string }) {
 
   const riskColor =
     risk?.risk_level === "Dusuk"
-      ? "text-green-400"
+      ? "text-emerald-400"
       : risk?.risk_level === "Orta"
-      ? "text-yellow-400"
+      ? "text-amber-400"
       : "text-red-400";
 
   return (
     <div className="grid w-full max-w-6xl grid-cols-1 gap-6 lg:grid-cols-3">
       {/* Sol taraf: grafik + risk (2/3 genislik) */}
-      <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-8 text-white shadow-lg lg:col-span-2">
+      <div
+        className="rounded-xl border p-8 text-[#E8E6E0] shadow-lg lg:col-span-2"
+        style={{ borderColor: "#1E2530", backgroundColor: "#0D1220" }}
+      >
         {stock ? (
           <>
-            <h1 className="text-2xl font-bold">{stock.symbol}</h1>
+            <h1 className="font-[family-name:var(--font-mono)] text-2xl font-medium tracking-wide">
+              {stock.symbol}
+            </h1>
             <div className="mt-2 flex items-baseline gap-3">
-              <p className="text-3xl font-semibold text-green-400">
+              <p className="font-[family-name:var(--font-mono)] text-3xl font-medium text-[#F3F1EA]">
                 ${stock.price}
               </p>
               <p
                 className={`text-sm font-medium ${
-                  stock.change_percent >= 0 ? "text-green-400" : "text-red-400"
+                  stock.change_percent >= 0 ? "text-emerald-400" : "text-red-400"
                 }`}
               >
                 {stock.change_percent >= 0 ? "↑" : "↓"}{" "}
@@ -116,11 +121,12 @@ export default function StockDetail({ symbol }: { symbol: string }) {
                 <button
                   key={r.key}
                   onClick={() => setSelectedRange(r.key)}
-                  className={`rounded-lg px-3 py-1 text-sm font-medium transition-colors ${
+                  className="rounded-lg px-3 py-1 text-sm font-medium transition-colors"
+                  style={
                     selectedRange === r.key
-                      ? "bg-green-500 text-black"
-                      : "bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
-                  }`}
+                      ? { backgroundColor: "#C9A24B", color: "#0A0E16" }
+                      : { backgroundColor: "#111826", color: "#8B93A1" }
+                  }
                 >
                   {r.label}
                 </button>
@@ -130,21 +136,23 @@ export default function StockDetail({ symbol }: { symbol: string }) {
             <div className="mt-3 flex gap-2">
               <button
                 onClick={() => setChartType("line")}
-                className={`rounded-lg px-3 py-1 text-sm font-medium transition-colors ${
+                className="rounded-lg px-3 py-1 text-sm font-medium transition-colors"
+                style={
                   chartType === "line"
-                    ? "bg-neutral-100 text-black"
-                    : "bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
-                }`}
+                    ? { backgroundColor: "#E8E6E0", color: "#0A0E16" }
+                    : { backgroundColor: "#111826", color: "#8B93A1" }
+                }
               >
                 Çizgi
               </button>
               <button
                 onClick={() => setChartType("candle")}
-                className={`rounded-lg px-3 py-1 text-sm font-medium transition-colors ${
+                className="rounded-lg px-3 py-1 text-sm font-medium transition-colors"
+                style={
                   chartType === "candle"
-                    ? "bg-neutral-100 text-black"
-                    : "bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
-                }`}
+                    ? { backgroundColor: "#E8E6E0", color: "#0A0E16" }
+                    : { backgroundColor: "#111826", color: "#8B93A1" }
+                }
               >
                 Mum
               </button>
@@ -155,37 +163,43 @@ export default function StockDetail({ symbol }: { symbol: string }) {
             </div>
 
             {risk && (
-              <div className="mt-6 rounded-xl border border-neutral-800 bg-neutral-950 p-4">
+              <div
+                className="mt-6 rounded-xl border p-4"
+                style={{ borderColor: "#1E2530", backgroundColor: "#0A0E16" }}
+              >
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-neutral-400">Risk Seviyesi</span>
+                  <span className="text-sm text-[#8B93A1]">Risk Seviyesi</span>
                   <span className={`text-lg font-bold ${riskColor}`}>
                     {risk.risk_level} (%{risk.risk_percentage})
                   </span>
                 </div>
-                <p className="mt-2 text-sm text-neutral-400">{risk.comment}</p>
+                <p className="mt-2 text-sm text-[#8B93A1]">{risk.comment}</p>
               </div>
             )}
           </>
         ) : (
-          <p className="text-white">Yukleniyor...</p>
+          <p className="text-[#E8E6E0]">Yukleniyor...</p>
         )}
       </div>
 
       {/* Sag taraf: AI yorumu (1/3 genislik) */}
-      <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-6 text-white shadow-lg">
-        <h2 className="mb-4 text-lg font-bold text-neutral-200">
+      <div
+        className="rounded-xl border p-6 text-[#E8E6E0] shadow-lg"
+        style={{ borderColor: "#1E2530", backgroundColor: "#0D1220" }}
+      >
+        <h2 className="mb-4 font-[family-name:var(--font-display)] text-lg font-medium">
           AI Değerlendirmesi
         </h2>
 
         {commentary ? (
           <>
             <div className="mb-5">
-              <h3 className="mb-2 text-sm font-semibold text-green-400">
+              <h3 className="mb-2 text-sm font-semibold text-emerald-400">
                 Olumlu Yönler
               </h3>
               <ul className="space-y-1.5">
                 {commentary.positive_points.map((point, i) => (
-                  <li key={i} className="text-sm text-neutral-300">
+                  <li key={i} className="text-sm text-[#B8BFC9]">
                     • {point}
                   </li>
                 ))}
@@ -198,33 +212,39 @@ export default function StockDetail({ symbol }: { symbol: string }) {
               </h3>
               <ul className="space-y-1.5">
                 {commentary.negative_points.map((point, i) => (
-                  <li key={i} className="text-sm text-neutral-300">
+                  <li key={i} className="text-sm text-[#B8BFC9]">
                     • {point}
                   </li>
                 ))}
               </ul>
             </div>
 
-            <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-4">
+            <div
+              className="rounded-xl border p-4"
+              style={{ borderColor: "#1E2530", backgroundColor: "#0A0E16" }}
+            >
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-sm font-semibold text-neutral-200">
+                <span className="text-sm font-semibold text-[#E8E6E0]">
                   AI Tahmini
                 </span>
-                <span className="text-xs font-medium text-neutral-400">
+                <span className="text-xs font-medium text-[#8B93A1]">
                   Risk: {commentary.prediction_risk}
                 </span>
               </div>
-              <p className="text-sm leading-relaxed text-neutral-300">
+              <p className="text-sm leading-relaxed text-[#B8BFC9]">
                 {commentary.prediction}
               </p>
-              <p className="mt-2 text-xs text-neutral-600">
+              <p className="mt-2 text-xs text-[#5A6273]">
                 Bu bir yatırım tavsiyesi değildir.
               </p>
             </div>
           </>
         ) : (
-          <div className="flex items-center gap-2 text-sm text-neutral-500">
-            <div className="h-3 w-3 animate-spin rounded-full border-2 border-neutral-600 border-t-green-400" />
+          <div className="flex items-center gap-2 text-sm text-[#5A6273]">
+            <div
+              className="h-3 w-3 animate-spin rounded-full border-2"
+              style={{ borderColor: "#242B38", borderTopColor: "#C9A24B" }}
+            />
             AI değerlendirme hazırlanıyor...
           </div>
         )}

@@ -9,4 +9,10 @@ def read_commentary(symbol: str):
         data = get_ai_commentary(symbol)
         return data
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        error_text = str(e)
+        if "429" in error_text or "quota" in error_text.lower():
+            raise HTTPException(
+                status_code=429,
+                detail="AI yorum kotasi doldu, birazdan tekrar deneyin"
+            )
+        raise HTTPException(status_code=500, detail=error_text)
