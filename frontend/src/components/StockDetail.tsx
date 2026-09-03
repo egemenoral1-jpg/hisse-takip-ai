@@ -33,6 +33,11 @@ type CommentaryData = {
   prediction_risk: string;
 };
 
+type MarketStatus = {
+  is_open: boolean;
+  ny_time: string;
+};
+
 const RANGES = [
   { key: "24s", label: "24S" },
   { key: "1h", label: "1H" },
@@ -44,20 +49,28 @@ const RANGES = [
 
 export default function StockDetail({ symbol }: { symbol: string }) {
   const [stock, setStock] = useState<StockPrice | null>(null);
+  const [marketStatus, setMarketStatus] = useState<MarketStatus | null>(null);
   const [history, setHistory] = useState<HistoryPoint[]>([]);
   const [risk, setRisk] = useState<RiskData | null>(null);
   const [commentary, setCommentary] = useState<CommentaryData | null>(null);
   const [selectedRange, setSelectedRange] = useState("3a");
   const [chartType, setChartType] = useState<"line" | "candle">("line");
 
-  useEffect(() => {
+    useEffect(() => {
     const fetchPrice = () => {
       fetch(`http://127.0.0.1:8000/stocks/${symbol}`)
         .then((res) => res.json())
         .then((data) => setStock(data));
     };
 
+    const fetchMarketStatus = () => {
+      fetch(`http://127.0.0.1:8000/stocks/market/status`)
+        .then((res) => res.json())
+        .then((data) => setMarketStatus(data));
+    };
+
     fetchPrice();
+    fetchMarketStatus();
     const interval = setInterval(fetchPrice, 30000);
 
     fetch(`http://127.0.0.1:8000/ai/${symbol}/commentary`)
@@ -73,6 +86,7 @@ export default function StockDetail({ symbol }: { symbol: string }) {
 
     return () => clearInterval(interval);
   }, [symbol]);
+  
 
   useEffect(() => {
     fetch(`http://127.0.0.1:8000/stocks/${symbol}/history?range=${selectedRange}`)
@@ -100,9 +114,25 @@ export default function StockDetail({ symbol }: { symbol: string }) {
       >
         {stock ? (
           <>
-            <h1 className="font-[family-name:var(--font-mono)] text-2xl font-medium tracking-wide">
-              {stock.symbol}
-            </h1>
+                        <div className="flex items-center gap-3">
+              <h1 className="font-[family-name:var(--font-mono)] text-2xl font-medium tracking-wide">
+                {stock.symbol}
+              </h1>
+              {marketStatus && (
+                <div className="flex items-center gap-1.5">
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      marketStatus.is_open
+                        ? "animate-pulse bg-emerald-400"
+                        : "bg-neutral-600"
+                    }`}
+                  />
+                  <span className="text-xs text-[#6B7280]">
+                    {marketStatus.is_open ? "Piyasa Açık" : "Piyasa Kapalı"}
+                  </span>
+                </div>
+              )}
+            </div>
             <div className="mt-2 flex items-baseline gap-3">
               <p className="font-[family-name:var(--font-mono)] text-3xl font-medium text-[#F3F1EA]">
                 ${stock.price}
