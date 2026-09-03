@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Sparkline from "@/components/Sparkline";
 
 type StockPrice = {
   symbol: string;
@@ -23,6 +24,7 @@ const POPULAR_STOCKS = [
 export default function Home() {
   const router = useRouter();
   const [prices, setPrices] = useState<Record<string, StockPrice>>({});
+  const [sparklines, setSparklines] = useState<Record<string, number[]>>({});
   const [searchInput, setSearchInput] = useState("");
 
   useEffect(() => {
@@ -36,7 +38,21 @@ export default function Home() {
       });
     };
 
+    const fetchSparklines = () => {
+      POPULAR_STOCKS.forEach((s) => {
+        fetch(`http://127.0.0.1:8000/stocks/${s.symbol}/history?range=1a`)
+          .then((res) => res.json())
+          .then((data: { close: number }[]) => {
+            setSparklines((prev) => ({
+              ...prev,
+              [s.symbol]: data.map((point) => point.close),
+            }));
+          });
+      });
+    };
+
     fetchPrices();
+    fetchSparklines();
     const interval = setInterval(fetchPrices, 30000);
     return () => clearInterval(interval);
   }, []);
@@ -154,6 +170,11 @@ export default function Home() {
                     </p>
                     <p className="mt-0.5 text-sm text-[#6B7280]">{s.name}</p>
                   </div>
+
+                  {sparklines[s.symbol] && (
+                    <Sparkline data={sparklines[s.symbol]} isUp={isUp} />
+                  )}
+
                   <div className="text-right">
                     <p className="font-[family-name:var(--font-mono)] text-[15px] text-[#E8E6E0]">
                       {p ? `$${p.price}` : "···"}
