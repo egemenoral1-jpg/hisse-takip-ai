@@ -168,17 +168,35 @@ export default function StockDetail({ symbol }: { symbol: string }) {
                 className="mt-6 rounded-xl border p-4"
                 style={{ borderColor: "#1E2530", backgroundColor: "#0A0E16" }}
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-[#8B93A1]">Risk Seviyesi</span>
-                  <span className={`text-lg font-bold ${riskColor}`}>
+                                <div className="flex items-center justify-between">
+                  <span className="text-base font-medium text-[#B8BFC9]">
+                    Risk Seviyesi
+                  </span>
+                  <span className={`text-xl font-bold ${riskColor}`}>
                     {risk.risk_level}
                   </span>
                 </div>
-                <div className="mt-1.5 flex gap-4 text-xs text-[#6B7280]">
-                  <span>Günlük: %{risk.daily_risk_percentage}</span>
-                  <span>Yıllık: %{risk.annual_risk_percentage}</span>
+                <div className="mt-3 flex gap-3">
+                  <div
+                    className="flex-1 rounded-lg border px-3 py-2"
+                    style={{ borderColor: "#1E2530", backgroundColor: "#0D1220" }}
+                  >
+                    <p className="text-xs text-[#6B7280]">Günlük Oynaklık</p>
+                    <p className="mt-0.5 font-[family-name:var(--font-mono)] text-base text-[#E8E6E0]">
+                      %{risk.daily_risk_percentage}
+                    </p>
+                  </div>
+                  <div
+                    className="flex-1 rounded-lg border px-3 py-2"
+                    style={{ borderColor: "#1E2530", backgroundColor: "#0D1220" }}
+                  >
+                    <p className="text-xs text-[#6B7280]">Yıllık Oynaklık</p>
+                    <p className="mt-0.5 font-[family-name:var(--font-mono)] text-base text-[#E8E6E0]">
+                      %{risk.annual_risk_percentage}
+                    </p>
+                  </div>
                 </div>
-                <p className="mt-2 text-sm text-[#8B93A1]">{risk.comment}</p>
+                <p className="mt-3 text-sm text-[#8B93A1]">{risk.comment}</p>
               </div>
             )}
           </>
