@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { createChart, ColorType, IChartApi, LineSeries } from "lightweight-charts";
+import { createChart, ColorType, IChartApi, LineSeries, CrosshairMode } from "lightweight-charts";
 
 type HistoryPoint = {
   time: string;
@@ -16,21 +16,24 @@ export default function StockChart({ data }: { data: HistoryPoint[] }) {
     if (!containerRef.current || data.length === 0) return;
 
     const chart = createChart(containerRef.current, {
-      width: containerRef.current.clientWidth,
-      height: 300,
-      layout: {
-        background: { type: ColorType.Solid, color: "transparent" },
-        textColor: "#d1d5db",
-      },
-      grid: {
-        vertLines: { color: "#262626" },
-        horzLines: { color: "#262626" },
-      },
-      timeScale: {
-    timeVisible: true,
-    secondsVisible: false,
-  },
-    });
+        width: containerRef.current.clientWidth,
+        height: 300,
+        layout: {
+            background: { type: ColorType.Solid, color: "transparent" },
+            textColor: "#d1d5db",
+        },
+        grid: {
+            vertLines: { color: "#262626" },
+            horzLines: { color: "#262626" },
+        },
+        timeScale: {
+            timeVisible: true,
+            secondsVisible: false,
+        },
+        crosshair: {
+            mode: CrosshairMode.Magnet,
+        },
+        });
 
     const lineSeries = chart.addSeries(LineSeries, {
     color: "#4ade80",
