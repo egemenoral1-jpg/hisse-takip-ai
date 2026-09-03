@@ -25,7 +25,7 @@ export default function Home() {
   const [prices, setPrices] = useState<Record<string, StockPrice>>({});
   const [searchInput, setSearchInput] = useState("");
 
-      useEffect(() => {
+  useEffect(() => {
     const fetchPrices = () => {
       POPULAR_STOCKS.forEach((s) => {
         fetch(`http://127.0.0.1:8000/stocks/${s.symbol}`)
@@ -38,7 +38,6 @@ export default function Home() {
 
     fetchPrices();
     const interval = setInterval(fetchPrices, 30000);
-
     return () => clearInterval(interval);
   }, []);
 
@@ -50,29 +49,80 @@ export default function Home() {
     }
   };
 
+  const tickerList = [...POPULAR_STOCKS, ...POPULAR_STOCKS]; // kesintisiz kaymasi icin ikiye katliyoruz
+
   return (
-    <main className="min-h-screen bg-neutral-950 text-white">
-      {/* Ust hero alani */}
-      <div className="border-b border-neutral-800 bg-gradient-to-b from-neutral-900 to-neutral-950 px-8 py-16">
-        <div className="mx-auto max-w-4xl text-center">
-          <h1 className="text-4xl font-bold tracking-tight">
-            Hisse Takip <span className="text-green-400">AI</span>
+    <main
+      className="min-h-screen text-[#E8E6E0]"
+      style={{ backgroundColor: "#0A0E16" }}
+    >
+      {/* Kayan ticker seridi */}
+      <div
+        className="overflow-hidden border-b py-2.5"
+        style={{ borderColor: "#1E2530", backgroundColor: "#0D1220" }}
+      >
+        <div className="ticker-track flex w-max gap-10">
+          {tickerList.map((s, i) => {
+            const p = prices[s.symbol];
+            return (
+              <span
+                key={i}
+                className="flex items-center gap-2 whitespace-nowrap font-[family-name:var(--font-mono)] text-xs"
+              >
+                <span className="text-[#8B93A1]">{s.symbol}</span>
+                {p ? (
+                  <>
+                    <span className="text-[#E8E6E0]">${p.price}</span>
+                    <span
+                      className={
+                        p.change_percent >= 0
+                          ? "text-emerald-400"
+                          : "text-red-400"
+                      }
+                    >
+                      {p.change_percent >= 0 ? "↑" : "↓"}{" "}
+                      {Math.abs(p.change_percent)}%
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-[#4A5262]">···</span>
+                )}
+              </span>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Hero alani */}
+      <div
+        className="border-b px-8 py-20"
+        style={{ borderColor: "#1E2530" }}
+      >
+        <div className="mx-auto max-w-3xl text-center">
+          <h1 className="font-[family-name:var(--font-display)] text-5xl font-medium tracking-tight text-[#F3F1EA]">
+            Hisse takibi, yapay zekayla
           </h1>
-          <p className="mt-3 text-neutral-400">
-            Hisseleri takip et, yapay zeka destekli analizleri incele.
+          <p className="mx-auto mt-4 max-w-lg text-[15px] leading-relaxed text-[#8B93A1]">
+            Bir sembol yaz, güncel fiyatı, geçmiş grafiği ve yapay zekanın
+            hazırladığı olumlu/olumsuz analizi tek ekranda gör.
           </p>
 
-          <form onSubmit={handleSearch} className="mx-auto mt-8 flex max-w-md gap-2">
+          <form
+            onSubmit={handleSearch}
+            className="mx-auto mt-9 flex max-w-md gap-2"
+          >
             <input
               type="text"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Sembol ara (ör. AAPL, TSLA)"
-              className="flex-1 rounded-xl border border-neutral-700 bg-neutral-900 px-4 py-3 text-sm text-white placeholder-neutral-500 outline-none focus:border-green-500"
+              className="flex-1 rounded-lg border px-4 py-3 text-sm outline-none transition-colors placeholder:text-[#5A6273] focus:border-[#C9A24B]"
+              style={{ borderColor: "#242B38", backgroundColor: "#111826" }}
             />
             <button
               type="submit"
-              className="rounded-xl bg-green-500 px-5 py-3 text-sm font-semibold text-black transition-colors hover:bg-green-400"
+              className="rounded-lg px-5 py-3 text-sm font-medium text-[#0A0E16] transition-opacity hover:opacity-90"
+              style={{ backgroundColor: "#C9A24B" }}
             >
               Ara
             </button>
@@ -81,47 +131,47 @@ export default function Home() {
       </div>
 
       {/* Populer hisseler */}
-      <div className="mx-auto max-w-4xl px-8 py-12">
-        <h2 className="mb-6 text-xl font-bold text-neutral-200">
+      <div className="mx-auto max-w-4xl px-8 py-14">
+        <h2 className="mb-6 font-[family-name:var(--font-display)] text-xl font-medium text-[#E8E6E0]">
           Popüler Hisseler
         </h2>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-          {POPULAR_STOCKS.map((s) => (
-            <Link
-              key={s.symbol}
-              href={`/hisse/${s.symbol}`}
-              className="group rounded-2xl border border-neutral-800 bg-neutral-900 p-5 transition-all hover:border-green-500/50 hover:bg-neutral-800/50"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-lg font-bold group-hover:text-green-400">
-                    {s.symbol}
-                  </p>
-                  <p className="text-sm text-neutral-400">{s.name}</p>
-                </div>
-                                <div className="text-right">
-                  <p className="text-xl font-semibold text-green-400">
-                    {prices[s.symbol] !== undefined
-                      ? `$${prices[s.symbol].price}`
-                      : "..."}
-                  </p>
-                  {prices[s.symbol] !== undefined && (
-                    <p
-                      className={`text-xs font-medium ${
-                        prices[s.symbol].change_percent >= 0
-                          ? "text-green-400"
-                          : "text-red-400"
-                      }`}
-                    >
-                      {prices[s.symbol].change_percent >= 0 ? "↑" : "↓"}{" "}
-                      {Math.abs(prices[s.symbol].change_percent)}%
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
+          {POPULAR_STOCKS.map((s) => {
+            const p = prices[s.symbol];
+            const isUp = p ? p.change_percent >= 0 : true;
+            return (
+              <Link
+                key={s.symbol}
+                href={`/hisse/${s.symbol}`}
+                className="group rounded-xl border p-5 transition-colors"
+                style={{ borderColor: "#1E2530", backgroundColor: "#0D1220" }}
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="font-[family-name:var(--font-mono)] text-[15px] font-medium tracking-wide text-[#E8E6E0] group-hover:text-[#C9A24B]">
+                      {s.symbol}
                     </p>
-                  )}
+                    <p className="mt-0.5 text-sm text-[#6B7280]">{s.name}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-[family-name:var(--font-mono)] text-[15px] text-[#E8E6E0]">
+                      {p ? `$${p.price}` : "···"}
+                    </p>
+                    {p && (
+                      <p
+                        className={`mt-0.5 text-xs ${
+                          isUp ? "text-emerald-400" : "text-red-400"
+                        }`}
+                      >
+                        {isUp ? "↑" : "↓"} {Math.abs(p.change_percent)}%
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
       </div>
     </main>
