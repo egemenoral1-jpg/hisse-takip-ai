@@ -24,7 +24,10 @@ type RiskData = {
 
 type CommentaryData = {
   symbol: string;
-  commentary: string;
+  positive_points: string[];
+  negative_points: string[];
+  prediction: string;
+  prediction_risk: string;
 };
 
 const RANGES = [
@@ -143,14 +146,57 @@ export default function StockDetail({ symbol }: { symbol: string }) {
       </div>
 
       {/* Sag taraf: AI yorumu (1/3 genislik) */}
+            {/* Sag taraf: AI yorumu (1/3 genislik) */}
       <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-6 text-white shadow-lg">
-        <h2 className="mb-3 text-lg font-bold text-neutral-200">
+        <h2 className="mb-4 text-lg font-bold text-neutral-200">
           AI Değerlendirmesi
         </h2>
+
         {commentary ? (
-          <p className="text-sm leading-relaxed text-neutral-300">
-            {commentary.commentary}
-          </p>
+          <>
+            <div className="mb-5">
+              <h3 className="mb-2 text-sm font-semibold text-green-400">
+                Olumlu Yönler
+              </h3>
+              <ul className="space-y-1.5">
+                {commentary.positive_points.map((point, i) => (
+                  <li key={i} className="text-sm text-neutral-300">
+                    • {point}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="mb-5">
+              <h3 className="mb-2 text-sm font-semibold text-red-400">
+                Olumsuz Yönler
+              </h3>
+              <ul className="space-y-1.5">
+                {commentary.negative_points.map((point, i) => (
+                  <li key={i} className="text-sm text-neutral-300">
+                    • {point}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-4">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-sm font-semibold text-neutral-200">
+                  AI Tahmini
+                </span>
+                <span className="text-xs font-medium text-neutral-400">
+                  Risk: {commentary.prediction_risk}
+                </span>
+              </div>
+              <p className="text-sm leading-relaxed text-neutral-300">
+                {commentary.prediction}
+              </p>
+              <p className="mt-2 text-xs text-neutral-600">
+                Bu bir yatırım tavsiyesi değildir.
+              </p>
+            </div>
+          </>
         ) : (
           <p className="text-sm text-neutral-500">Yorum hazırlanıyor...</p>
         )}
