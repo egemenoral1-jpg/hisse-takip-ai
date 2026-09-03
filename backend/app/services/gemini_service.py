@@ -1,10 +1,20 @@
 import json
+import time
 import google.generativeai as genai
 from app.core.config import GEMINI_API_KEY
 
 genai.configure(api_key=GEMINI_API_KEY)
 
+CACHE_DURATION_SECONDS = 6 * 60 * 60  # 6 saat
+_commentary_cache = {}
+
 def get_ai_commentary(symbol: str):
+    now = time.time()
+
+    cached = _commentary_cache.get(symbol)
+    if cached and (now - cached["timestamp"] < CACHE_DURATION_SECONDS):
+        return cached["data"]
+
     model = genai.GenerativeModel("gemini-3.6-flash")
 
     prompt = f"""
@@ -37,10 +47,14 @@ Kurallar:
 
     data = json.loads(text)
 
-    return {
+    result = {
         "symbol": symbol,
         "positive_points": data.get("positive_points", []),
         "negative_points": data.get("negative_points", []),
         "prediction": data.get("prediction", ""),
         "prediction_risk": data.get("prediction_risk", "Orta"),
     }
+
+    _commentary_cache[symbol] = {"timestamp": now, "data": result}
+
+    return result
