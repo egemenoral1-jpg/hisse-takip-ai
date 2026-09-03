@@ -2,6 +2,7 @@ import yfinance as yf
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+
 def get_market_status():
     ny_time = datetime.now(ZoneInfo("America/New_York"))
     is_weekday = ny_time.weekday() < 5
@@ -13,6 +14,7 @@ def get_market_status():
         "is_open": is_open,
         "ny_time": ny_time.strftime("%H:%M")
     }
+
 
 def get_stock_price(symbol: str):
     stock = yf.Ticker(symbol)
@@ -44,6 +46,7 @@ RANGE_MAP = {
     "12a": {"period": "1y", "interval": "1d"},
 }
 
+
 def get_stock_history(symbol: str, range_key: str):
     settings = RANGE_MAP.get(range_key)
     if settings is None:
@@ -66,3 +69,22 @@ def get_stock_history(symbol: str, range_key: str):
         })
 
     return result
+
+
+def get_52_week_range(symbol: str):
+    stock = yf.Ticker(symbol)
+    data = stock.history(period="1y")
+
+    if data.empty:
+        return None
+
+    week_52_high = round(data["High"].max(), 2)
+    week_52_low = round(data["Low"].min(), 2)
+    current_price = round(data["Close"].iloc[-1], 2)
+
+    return {
+        "symbol": symbol,
+        "week_52_high": week_52_high,
+        "week_52_low": week_52_low,
+        "current_price": current_price
+    }
